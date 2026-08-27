@@ -1,3 +1,82 @@
+/*
+================================================================================
+FILE: stored_proc_load_silver_layer.sql
+PURPOSE: Data Warehouse Silver Layer ETL Procedure
+================================================================================
+
+DESCRIPTION:
+This stored procedure orchestrates the extraction, transformation, and loading 
+(ETL) of data from the Bronze layer into the Silver layer of the data warehouse.
+The Silver layer applies data quality rules, normalization, and enrichment to 
+prepare raw data for analytical and reporting purposes.
+
+KEY RESPONSIBILITIES:
+- Load and cleanse customer information (crm_cust_info)
+  * Trim whitespace and normalize marital status and gender fields
+  * Select most recent record per customer using row numbering
+  
+- Transform product information (crm_prd_info)
+  * Parse and derive category IDs and product keys from composite fields
+  * Standardize product line codes to readable values
+  * Enrich product data by calculating end dates based on next start date
+  
+- Validate and reconcile sales transactions (crm_sales_details)
+  * Validate date fields and handle missing/invalid dates
+  * Recalculate sales amounts if original values are missing or incorrect
+  * Derive unit prices from sales and quantity data
+  
+- Standardize ERP customer data (erp_cust_az12)
+  * Clean up customer IDs (remove 'NAS' prefixes)
+  * Validate birth dates and handle anomalies
+  * Normalize gender values
+  
+- Standardize ERP location data (erp_loc_a101)
+  * Remove dashes from IDs
+  * Convert country codes to full country names
+  * Handle missing/null values
+  
+- Load product category data (erp_px_cat_g1v2)
+  * Direct pass-through from Bronze with truncate and reload
+
+TRANSFORMATIONS APPLIED:
+- String trimming and case normalization
+- CASE statements for value mapping and standardization
+- NULL handling and invalid data detection
+- Window functions for deduplication and enrichment
+- Data type conversions and calculations
+
+ERROR HANDLING:
+- Try-Catch block captures SQL errors with detailed logging
+- Error messages, line numbers, and states are printed for debugging
+
+MONITORING:
+- Execution times tracked for each table load
+- Total batch processing time reported
+- Status messages printed for progress tracking
+
+DATA SOURCES (Bronze Layer):
+- bronze.crm_cust_info
+- bronze.crm_prd_info
+- bronze.crm_sales_details
+- bronze.erp_cust_az12
+- bronze.erp_loc_a101
+- bronze.erp_px_cat_g1v2
+
+DATA TARGETS (Silver Layer):
+- silver.crm_cust_info
+- silver.crm_prd_info
+- silver.crm_sales_details
+- silver.erp_cust_az12
+- silver.erp_loc_a101
+- silver.erp_px_cat_g1v2
+
+EXECUTION NOTES:
+- All tables are truncated before reload (full refresh pattern)
+- All loads are executed within a single transaction for consistency
+- Timing metrics are provided per table and overall batch
+================================================================================
+*/
+
 CREATE OR ALTER PROCEDURE silver.load_silver AS
 BEGIN
   BEGIN TRY
