@@ -1,3 +1,20 @@
+/*
+  ============================================
+  SILVER LAYER - DDL SCRIPT
+  ============================================
+  Purpose: Create dimension and fact tables in the silver layer (cleansed data)
+  
+  Tables Created:
+  - crm_cust_info      : Customer information from CRM system
+  - crm_prd_info       : Product details from CRM system
+  - crm_sales_details  : Sales transactions from CRM system
+  - erp_cust_az12      : Customer data from ERP system
+  - erp_loc_a101       : Location/Country data from ERP system
+  - erp_px_cat_g1v2    : Product categories from ERP system
+  
+  Note: All tables include dwh_create_date for tracking when records were loaded
+  ============================================
+*/
 IF OBJECT_ID('silver.crm_cust_info','U') IS NOT NULL
   DROP TABLE silver.crm_cust_info;
 GO
